@@ -764,6 +764,7 @@ function processSobel(){
   const gxK = [-1,0,1, -2,0,2, -1,0,1];
   const gyK = [ 1,2,1,  0,0,0, -1,-2,-1];
 
+  const edges = new Float32Array(w*h);
   const gray = new Float32Array(w*h);
   for(let i=0,j=0;i<gray.length;i++,j+=4){
     const r=s[j], g=s[j+1], b=s[j+2];
@@ -787,6 +788,7 @@ function processSobel(){
       g = Math.min(255,g);
       let e = g/255;
       e = Math.pow(e,1.1); // curva suave
+      edges[idx] = e;
 
       const ii = idx*4;
       // tono azul/cian bioluminiscente
@@ -802,6 +804,7 @@ function processSobel(){
     }
   }
   edgeCtx.putImageData(dst,0,0);
+  window.treeEdges = {data:edges, w, h};
   sobelReady = true;
 }
 
@@ -823,14 +826,29 @@ function animateSobel(){
 animateSobel();
 
 /* start plexus */
-spawnOrbit(); animate();
+animate(); /* órbita desactivada */
 </script>
 
-<!-- RAÍCES ORGÁNICAS (p5) SUTILES ALREDEDOR DEL CENTRO -->
+<!-- MICELIO (p5): crece desde las raíces hacia arriba siguiendo los bordes del árbol -->
 <script>
   let walkers = [];
-  const MAX = 2600;   // menos partículas, más delicado
-  
+  const MAX = 2600;       // tope total de hifas
+  const ROOTS = 260;      // hifas activas que nacen desde abajo
+
+  function edgeAt(x,y){
+    const E = window.treeEdges;
+    if(!E) return 0;
+    const ix = Math.floor(x * E.w / width), iy = Math.floor(y * E.h / height);
+    if(ix<0||iy<0||ix>=E.w||iy>=E.h) return 0;
+    // promedio 3x3 para suavizar
+    let s=0,n=0;
+    for(let dy=-2;dy<=2;dy+=2) for(let dx=-2;dx<=2;dx+=2){
+      const xx=ix+dx, yy=iy+dy;
+      if(xx>=0&&yy>=0&&xx<E.w&&yy<E.h){ s+=E.data[yy*E.w+xx]; n++; }
+    }
+    return n? s/n : 0;
+  }
+
   function setup(){
     const cnv = createCanvas(windowWidth, windowHeight);
     cnv.position(0,0);
@@ -841,120 +859,100 @@ spawnOrbit(); animate();
     cnv.style('height','100vh');
     cnv.style('pointer-events','none');
     cnv.style('mix-blend-mode','screen');
-  
+
     colorMode(HSB,360,100,100,100);
-    clear();            // canvas transparente
-    blendMode(SCREEN);  // las raíces se suman a la luz
-  
-    initWalkers();
+    clear();
+    blendMode(SCREEN);
   }
-  
+
   function windowResized(){
     resizeCanvas(windowWidth, windowHeight);
     clear();
-    initWalkers();
-  }
-  
-  function initWalkers(){
     walkers = [];
-    const cx = width/2;
-    const cy = height/2;
-    const baseR = min(width, height) * 0.22; // anillo alrededor del centro
-  
-    for(let a = 0; a < TWO_PI; a += radians(2)){
-      const jitter = random(-baseR*0.10, baseR*0.10);
-      const r = baseR + jitter;
-      const x = cx + cos(a) * r;
-      const y = cy + sin(a) * r;
-      walkers.push(new Walker(x,y));
-      if (walkers.length >= MAX) break;
+  }
+
+  // nace en la franja baja, preferentemente sobre raíces (bordes fuertes)
+  function spawnRoot(){
+    for(let t=0;t<30;t++){
+      const x = random(width);
+      const y = random(height*0.82, height-2);
+      if(random() < edgeAt(x,y)*2.2 || t===29){
+        walkers.push(new Walker(x,y,-HALF_PI+random(-0.7,0.7)));
+        return;
+      }
     }
   }
-  
+
   class Walker{
-    constructor(x,y){
-      this.x = x;
-      this.y = y;
-      this.px = x;
-      this.py = y;
-  
-      this.life = random(900,1600);
-      this.ini  = this.life;
-      this.seed = random(99999);
-  
-      this.step  = random(0.35,0.9);   // movimiento más suave
-      this.thick = random(0.18,0.42); // líneas finas
-  
-      // azules apagados
-      this.h = random(200,215);
-      this.s = random(15,32);
-      this.b = random(35,70);
+    constructor(x,y,dir){
+      this.x=x; this.y=y; this.px=x; this.py=y;
+      this.dir=dir;
+      this.life=random(700,1400);
+      this.ini=this.life;
+      this.step=random(0.6,1.2);
+      this.thick=random(0.18,0.45);
+      this.h=random(195,215);
+      this.s=random(12,30);
+      this.b=random(45,80);
     }
-  
+
     update(){
-      if(this.life <= 0) return false;
-  
+      if(this.life<=0) return false;
       this.life--;
-      this.px = this.x;
-      this.py = this.y;
-  
-      const sc = 0.0023;
-      const t  = frameCount*0.002 + this.seed;
-      const n  = noise(this.x*sc, this.y*sc, t);
-      let ang  = n*TWO_PI*3.0;
-  
-      // deriva MUY leve hacia afuera (para que respire un poco)
-      let dx = this.x - width/2;
-      let dy = this.y - height/2;
-      let m  = sqrt(dx*dx + dy*dy) + 0.0001;
-      dx /= m; dy /= m;
-  
-      this.x += cos(ang)*this.step + dx*0.08;
-      this.y += sin(ang)*this.step + dy*0.08;
-  
-      if(this.x<0||this.x>width||this.y<0||this.y>height) return false;
-  
-      // ramificación muy discreta
-      if(this.life < this.ini*0.85 && random()<0.0025 && walkers.length<MAX){
-        walkers.push(new Walker(this.x,this.y));
+      this.px=this.x; this.py=this.y;
+
+      // mira en abanico y elige el camino con más "árbol" + tendencia a subir
+      let best=this.dir, bestScore=-1;
+      for(let k=-3;k<=3;k++){
+        const a=this.dir+k*0.28;
+        const sc=edgeAt(this.x+cos(a)*9, this.y+sin(a)*9)
+               + 0.12*(-sin(a))
+               + random(0,0.05);
+        if(sc>bestScore){bestScore=sc; best=a;}
       }
-  
+      // giro suave + leve ruido orgánico
+      let d = best-this.dir;
+      d = atan2(sin(d),cos(d));
+      this.dir += d*0.35 + (noise(this.x*0.01,this.y*0.01,frameCount*0.003)-0.5)*0.25;
+
+      // fuera del árbol avanza más lento y muere antes
+      const here = edgeAt(this.x,this.y);
+      if(here<0.04) this.life-=2;
+
+      this.x += cos(this.dir)*this.step;
+      this.y += sin(this.dir)*this.step;
+
+      if(this.x<0||this.x>width||this.y<0||this.y>height) return false;
+
+      // ramificación
+      if(random()<0.004 && walkers.length<MAX){
+        walkers.push(new Walker(this.x,this.y,this.dir+random([-1,1])*random(0.4,0.9)));
+      }
       return true;
     }
-  
+
     draw(){
-      const k = this.life / this.ini;
-      // alfa y grosor bajos: efecto “velo” sutil, no flúo
-      stroke(this.h, this.s, this.b, 10 + 35*k);
-      strokeWeight(this.thick * (0.6 + 0.8*k));
+      const k=this.life/this.ini;
+      stroke(this.h,this.s,this.b,10+35*k);
+      strokeWeight(this.thick*(0.6+0.8*k));
       noFill();
-  
-      const mx = (this.x + this.px) * 0.5;
-      const my = (this.y + this.py) * 0.5;
-      let nx = -(this.y - this.py);
-      let ny =  (this.x - this.px);
-      let m  = sqrt(nx*nx + ny*ny);
-      if(m !== 0){
-        nx /= m; ny /= m;
-      }
-      nx *= 3.5*k;
-      ny *= 3.5*k;
-  
-      beginShape();
-      vertex(this.px, this.py);
-      quadraticVertex(mx+nx, my+ny, this.x, this.y);
-      endShape();
+      line(this.px,this.py,this.x,this.y);
     }
   }
-  
+
   function draw(){
-    // sin fondo: solo se acumulan trazos transparentes
+    if(!window.treeEdges) return;          // espera el mapa del árbol
+
+    // desvanecimiento lento: el micelio respira y se renueva
+    if(frameCount%3===0){ erase(4); noStroke(); rect(0,0,width,height); noErase(); blendMode(SCREEN); }
+
+    // mantiene la población naciendo desde las raíces
+    let roots=0; for(const w of walkers) roots++;
+    for(let i=0;i<4 && roots<ROOTS;i++,roots++) spawnRoot();
+
     for(let i=walkers.length-1;i>=0;i--){
-      const w = walkers[i];
-      if(!w.update()){
-        walkers.splice(i,1);
-        continue;
-      }
+      const w=walkers[i];
+      if(!w.update()){ walkers.splice(i,1); continue; }
       w.draw();
     }
   }
