@@ -313,11 +313,6 @@ section.block{position:relative;padding:64px 18px 84px;scroll-margin-top:90px}
 <div class="wrap-hero" id="inicio">
   <div class="dial" id="dial" aria-label="Índice circular">
     <canvas id="plexus" width="1000" height="1000"></canvas>
-
-    <!-- PNG dentro del círculo central -->
-    <div class="center" id="center" data-src="img/principio.jpg">
-      <img src="img/centro.jpg" alt="" class="center-overlay">
-    </div>
   </div>
 </div>
 
@@ -603,7 +598,7 @@ for(let i=0;i<P.c;i++){const a=i/P.c*TP+rand(-.12,.12), r=canvas.width*0.16+rand
 for(let i=0;i<P.n;i++){const a=i/P.n*TP+rand(-.2,.2), r=canvas.width*0.06+rand(-6,6); parts.push({x:N.x+Math.cos(a)*r,y:N.y+Math.sin(a)*r,vx:rand(-.35,.35),vy:rand(-.35,.35),col:pick(PAL),t:'n'});} }
 const O={k:140,ip:10,op:24,sp:.0085,w:.004,dr:2.1,gl:8,ld:32,la:.55};
 function spawnOrbit(){orbits.length=0; const C=rc(document.getElementById('center')), min=Math.min(C.w,C.h)/2+O.ip, max=min+O.op; for(let i=0;i<O.k;i++){const a=i/O.k*Math.PI*2+rand(0,.6); orbits.push({cx:C.x,cy:C.y,r:rand(min,max),a,w:O.sp+rand(-O.w,O.w),col:pick(PAL)});} }
-function updOrbit(){const C=rc(document.getElementById('center')); for(const p of orbits){p.cx=C.x;p.cy=C.y;}}
+function updOrbit(){const el=document.getElementById('center'); if(!el) return; const C=rc(el); for(const p of orbits){p.cx=C.x;p.cy=C.y;}}
 function animate(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   updOrbit();
@@ -890,10 +885,13 @@ animate(); /* órbita desactivada */
       this.life=random(700,1400);
       this.ini=this.life;
       this.step=random(0.6,1.2);
+      this.seed=random(99999);
+      this.org=0;
       this.thick=random(0.18,0.45);
-      this.h=random(195,215);
-      this.s=random(12,30);
-      this.b=random(45,80);
+      // cian bioluminiscente, mismo tono que el Sobel
+      this.h=random(180,192);
+      this.s=random(70,95);
+      this.b=random(70,100);
     }
 
     update(){
@@ -915,17 +913,29 @@ animate(); /* órbita desactivada */
       d = atan2(sin(d),cos(d));
       this.dir += d*0.35 + (noise(this.x*0.01,this.y*0.01,frameCount*0.003)-0.5)*0.25;
 
-      // fuera del árbol avanza más lento y muere antes
-      const here = edgeAt(this.x,this.y);
-      if(here<0.04) this.life-=2;
+      // org = 0 en raíces/tronco (mapeado), 1 en las ramas (orgánico como la versión original)
+      this.org = constrain(map(this.y, height*0.60, height*0.35, 0, 1), 0, 1);
 
-      this.x += cos(this.dir)*this.step;
-      this.y += sin(this.dir)*this.step;
+      // movimiento orgánico original: campo de ruido + leve subida
+      const t = frameCount*0.002 + this.seed;
+      const nAng = noise(this.x*0.0023, this.y*0.0023, t)*TWO_PI*3.0;
+      const ox = cos(nAng)*this.step*0.8, oy = sin(nAng)*this.step*0.8 - 0.12;
+
+      // movimiento mapeado
+      const mx = cos(this.dir)*this.step, my = sin(this.dir)*this.step;
+
+      // fuera del árbol muere antes, solo en la zona mapeada
+      const here = edgeAt(this.x,this.y);
+      if(here<0.04 && this.org<0.5) this.life-=2;
+
+      this.x += lerp(mx, ox, this.org);
+      this.y += lerp(my, oy, this.org);
+      if(this.org>0.5) this.dir = atan2(this.y-this.py, this.x-this.px);
 
       if(this.x<0||this.x>width||this.y<0||this.y>height) return false;
 
       // ramificación
-      if(random()<0.004 && walkers.length<MAX){
+      if(random()<lerp(0.004,0.0025,this.org) && walkers.length<MAX){
         walkers.push(new Walker(this.x,this.y,this.dir+random([-1,1])*random(0.4,0.9)));
       }
       return true;
@@ -936,7 +946,18 @@ animate(); /* órbita desactivada */
       stroke(this.h,this.s,this.b,10+35*k);
       strokeWeight(this.thick*(0.6+0.8*k));
       noFill();
-      line(this.px,this.py,this.x,this.y);
+      if(this.org<0.2){
+        line(this.px,this.py,this.x,this.y);
+      }else{
+        const mx=(this.x+this.px)*0.5, my=(this.y+this.py)*0.5;
+        let nx=-(this.y-this.py), ny=(this.x-this.px);
+        const m=sqrt(nx*nx+ny*ny); if(m){nx/=m; ny/=m;}
+        const amp=3.5*k*this.org;
+        beginShape();
+        vertex(this.px,this.py);
+        quadraticVertex(mx+nx*amp, my+ny*amp, this.x, this.y);
+        endShape();
+      }
     }
   }
 
