@@ -687,30 +687,36 @@ lbPrev.addEventListener('click',()=>stepLb(-1));
 lbNext.addEventListener('click',()=>stepLb(1));
 window.addEventListener('keydown',e=>{ if(lb.classList.contains('open')){ if(e.key==='Escape') closeLb(); else if(e.key==='ArrowRight') stepLb(1); else if(e.key==='ArrowLeft') stepLb(-1); }});
 
-/* Scroll-spy */
+/* Cromática + fondo por espacio: se aplica al hacer scroll y al hacer click en el menú */
 const links=[...document.querySelectorAll('#menuEspacios a')];
 const secs=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
-const spy=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){const id='#'+e.target.id; links.forEach(l=>l.classList.toggle('active', l.getAttribute('href')===id));}})},{rootMargin:'-35% 0px -55% 0px',threshold:0});
-secs.forEach(s=>spy.observe(s));
-
-/* Cambio cromático + cambio de fondo al hacer click en el menú */
 const tint=document.getElementById('tint');
 const defaultBg=document.body.getAttribute('data-bg-src') || "";
-links.forEach(link=>{
-  link.addEventListener('click',()=>{
-    const mood = link.dataset.mood || "";
-    const bgSrc = link.dataset.bg || defaultBg;
+let currentMood=null;
 
-    // capa cromática
-    tint.className = 'tint';
-    if(mood) tint.classList.add(mood);
+// precarga de fondos para que el cambio no parpadee
+links.forEach(l=>{ if(l.dataset.bg){ const i=new Image(); i.src=l.dataset.bg; } });
 
-    // imagen de fondo
-    if(bgSrc){
-      document.documentElement.style.setProperty('--bg-img', `url("${bgSrc}")`);
-    }
-  });
-});
+function applyMood(mood,bgSrc){
+  if(mood===currentMood) return;
+  currentMood=mood;
+  tint.className='tint';
+  if(mood) tint.classList.add(mood);
+  if(bgSrc) document.documentElement.style.setProperty('--bg-img',`url("${bgSrc}")`);
+}
+
+const spy=new IntersectionObserver(es=>{es.forEach(e=>{
+  if(!e.isIntersecting) return;
+  const id='#'+e.target.id;
+  links.forEach(l=>l.classList.toggle('active', l.getAttribute('href')===id));
+  const link=links.find(l=>l.getAttribute('href')===id);
+  if(link) applyMood(link.dataset.mood||'', link.dataset.bg||defaultBg);
+  else applyMood('neutro', defaultBg); // hero
+})},{rootMargin:'-35% 0px -55% 0px',threshold:0});
+secs.forEach(s=>spy.observe(s));
+const hero=document.getElementById('inicio'); if(hero) spy.observe(hero);
+
+links.forEach(link=>link.addEventListener('click',()=>applyMood(link.dataset.mood||'', link.dataset.bg||defaultBg)));
 
 /* ==== SOBEL DINÁMICO SOBRE EL FONDO ==== */
 const sobelCanvas = document.getElementById('sobelLayer');
@@ -827,8 +833,14 @@ animate(); /* órbita desactivada */
 <!-- MICELIO (p5): crece desde las raíces hacia arriba siguiendo los bordes del árbol -->
 <script>
   let walkers = [];
+  let micelioCanvas = null;
+  // en el hero se ve pleno; sobre los textos baja para no competir con la lectura
+  window.addEventListener('scroll',()=>{
+    if(!micelioCanvas) return;
+    micelioCanvas.style.opacity = window.scrollY > window.innerHeight*0.5 ? '0.35' : '1';
+  },{passive:true});
   const MAX = 2600;       // tope total de hifas
-  const ROOTS = 260;      // hifas activas que nacen desde abajo
+  const ROOTS = 150;      // hifas activas que nacen desde abajo
 
   function edgeAt(x,y){
     const E = window.treeEdges;
@@ -854,6 +866,8 @@ animate(); /* órbita desactivada */
     cnv.style('height','100vh');
     cnv.style('pointer-events','none');
     cnv.style('mix-blend-mode','screen');
+    cnv.style('transition','opacity 800ms ease');
+    micelioCanvas = cnv.elt;
 
     colorMode(HSB,360,100,100,100);
     clear();
@@ -890,8 +904,8 @@ animate(); /* órbita desactivada */
       this.thick=random(0.18,0.45);
       // cian bioluminiscente, mismo tono que el Sobel
       this.h=random(180,192);
-      this.s=random(70,95);
-      this.b=random(70,100);
+      this.s=random(45,65);
+      this.b=random(45,70);
     }
 
     update(){
@@ -943,7 +957,7 @@ animate(); /* órbita desactivada */
 
     draw(){
       const k=this.life/this.ini;
-      stroke(this.h,this.s,this.b,10+35*k);
+      stroke(this.h,this.s,this.b,4+16*k);
       strokeWeight(this.thick*(0.6+0.8*k));
       noFill();
       if(this.org<0.2){
