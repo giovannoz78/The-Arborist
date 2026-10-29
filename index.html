@@ -275,6 +275,20 @@ section.block{position:relative;padding:64px 18px 84px;scroll-margin-top:90px}
 .lb-close:hover,.lb-prev:hover,.lb-next:hover{background:rgba(0,0,0,.55);border-color:#fff}
 .lb-close svg,.lb-prev svg,.lb-next svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2}
 
+/* ===== Equipo Creativo ===== */
+.team{display:flex;flex-direction:column;gap:18px}
+.team-item{display:grid;grid-template-columns:96px 1fr;gap:16px;align-items:center;padding-top:18px;border-top:1px dashed rgba(255,255,255,.12)}
+.team-item:first-child{padding-top:0;border-top:0}
+.team-photo{width:96px;aspect-ratio:1/1;border-radius:50%;overflow:hidden;background:rgba(255,255,255,.08);border:1px solid var(--glass-bd)}
+.team-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.team-role{display:block;font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--txt-muted)}
+.team-name{margin:.15rem 0 .3rem;font-size:17px;font-weight:700;color:var(--txt-strong)}
+.text-block .team-text p{margin:0}
+@media (max-width:560px){
+  .team-item{grid-template-columns:72px 1fr;gap:12px}
+  .team-photo{width:72px}
+}
+
 @media (max-width:1100px){
   .inner{grid-template-columns:1fr;gap:22px}
   .carousel{min-height:58vh}
@@ -305,7 +319,7 @@ section.block{position:relative;padding:64px 18px 84px;scroll-margin-top:90px}
     <a href="#espacio-2" data-mood="etereo" data-bg="img/fondo-raiz2.png">Experiencia</a>
     <a href="#espacio-3" data-mood="calmo" data-bg="img/fondo-raiz3.png">Integración</a>
     <a href="#espacio-4" data-mood="trascendente" data-bg="img/fondo-raiz4.png">Trascendencia</a>
-    <a href="#espacio-5" data-mood="dinamico" data-bg="img/fondo-raiz5.png">Terapias</a>
+    <a href="#espacio-5" data-mood="dinamico" data-bg="img/fondo-raiz5.png">Equipo Creativo</a>
     <a href="#espacio-6" data-mood="ludico" data-bg="img/fondo-raiz6.png">Documental</a>
   </div>
 </nav>
@@ -508,25 +522,49 @@ section.block{position:relative;padding:64px 18px 84px;scroll-margin-top:90px}
   <!-- espacio 5 -->
   <section id="espacio-5" class="block">
     <div class="inner">
-      <h2 class="title">Terapias</h2>
+      <h2 class="title">Equipo Creativo</h2>
       <article class="text-block"><h3></h3>
-        <h3>Experiencia #1: Conéctate con tu Sombra.</h3>
-        <p>En un espacio privado, sobrio e íntimo, se invitará al asistente a exponer por escrito, sus aspectos personales que quiere cambiar y/o situaciones en su vida que necesita perdonar para sanar.</p>
-        <p>El objetivo acá es conectar al asistente con su sombra y/o esos aspectos/situaciones no resueltos que le impiden avanzar, por que los tiene trabajar.</p> 
-        <p>La Segunda Parte de la Experiencia será visualizar y sentir esa nueva realidad/potencial al trabajar esos aspectos y al lograr perdonar, sanar. </p>
-        <h3>Experiencia #2: Tus Pensamientos Generan tu Realidad</h3>
-        <p>En un tercer espacio, se invitará al asistente a conectarse con diferentes pensamientos que recorrerán la gama de emociones desde las más bajas hasta las más elevadas.</p>
-        <p>El objetivo acá es mostrarle al asistente como su HRV (Heart Rate Variable) se va modificando de acuerdo al pensamiento y como cada emoción tiene una frecuencia que cambia según su pensamiento.</p>
-        <h3>Experiencia #3: Foto de mi Aura </h3>
-        <p>En este espacio de la exhibición, cada participante introduce su dedo en una máquina que le reproduce su aura y le muestra en una pantalla la foto de sus chakras. Se podría luego imprimir (o no).</p>
-        <h3>Experiencia #4: Activación de la Glándula Pineal  </h3>
-        <p>En este espacio de la exhibición, cada participante podrá vivir la experiencia de cerrar los ojos ante una luz estroboscópica, unida con música y vivir una experiencia extrasensorial. Este espacio sería por reservación y con costo adicional a la entrada.</p>
+        <!-- Equipo: completar nombre, texto y subir la foto a img/ con el nombre indicado -->
+        <div class="team">
+          <div class="team-item">
+            <div class="team-photo"><img src="img/equipo-director.png" alt="" onerror="this.remove()"></div>
+            <div class="team-text">
+              <span class="team-role">Director Creativo</span>
+              <h4 class="team-name">Nombre y Apellido</h4>
+              <p>Texto.</p>
+            </div>
+          </div>
+          <div class="team-item">
+            <div class="team-photo"><img src="img/equipo-asesor.png" alt="" onerror="this.remove()"></div>
+            <div class="team-text">
+              <span class="team-role">Asesor Tecnológico</span>
+              <h4 class="team-name">Nombre y Apellido</h4>
+              <p>Texto.</p>
+            </div>
+          </div>
+          <div class="team-item">
+            <div class="team-photo"><img src="img/equipo-productor1.png" alt="" onerror="this.remove()"></div>
+            <div class="team-text">
+              <span class="team-role">Productor</span>
+              <h4 class="team-name">Nombre y Apellido</h4>
+              <p>Texto.</p>
+            </div>
+          </div>
+          <div class="team-item">
+            <div class="team-photo"><img src="img/equipo-productor2.png" alt="" onerror="this.remove()"></div>
+            <div class="team-text">
+              <span class="team-role">Productor</span>
+              <h4 class="team-name">Nombre y Apellido</h4>
+              <p>Texto.</p>
+            </div>
+          </div>
+        </div>
       </article>
-      <div class="carousel" data-caption="Experiencias de Sanación">
+      <div class="carousel" data-caption="Detrás de cámara">
         <div class="deck">
-          <figure class="card"><img src="img/terapia1.png" alt="Acto I"></figure>
-          <figure class="card"><img src="img/terapia2.png" alt="Acto II"></figure>
-          <figure class="card"><img src="img/terapia3.png" alt="Acto III"></figure>
+          <figure class="card"><img src="img/trascamara1.png" alt=""></figure>
+          <figure class="card"><img src="img/trascamara2.png" alt=""></figure>
+          <figure class="card"><img src="img/trascamara3.png" alt=""></figure>
         </div>
         <div class="nav">
           <button class="btn prev" aria-label="Anterior"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
