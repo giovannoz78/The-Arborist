@@ -289,6 +289,11 @@ section.block{position:relative;padding:64px 18px 84px;scroll-margin-top:90px}
   .team-photo{width:72px}
 }
 
+/* Equipo Creativo: una sola columna centrada */
+.block-centrado .inner{grid-template-columns:1fr;justify-items:center}
+.block-centrado .title{text-align:center}
+.block-centrado .text-block{width:min(640px,100%);box-sizing:border-box;max-height:none}
+
 @media (max-width:1100px){
   .inner{grid-template-columns:1fr;gap:22px}
   .carousel{min-height:58vh}
@@ -319,8 +324,8 @@ section.block{position:relative;padding:64px 18px 84px;scroll-margin-top:90px}
     <a href="#espacio-2" data-mood="etereo" data-bg="img/fondo-raiz2.png">Experiencia</a>
     <a href="#espacio-3" data-mood="calmo" data-bg="img/fondo-raiz3.png">Integración</a>
     <a href="#espacio-4" data-mood="trascendente" data-bg="img/fondo-raiz4.png">Trascendencia</a>
-    <a href="#espacio-5" data-mood="dinamico" data-bg="img/fondo-raiz5.png">Equipo Creativo</a>
     <a href="#espacio-6" data-mood="ludico" data-bg="img/fondo-raiz6.png">Documental</a>
+    <a href="#espacio-5" data-mood="dinamico" data-bg="img/fondo-raiz5.png">Equipo Creativo</a>
   </div>
 </nav>
 
@@ -498,8 +503,29 @@ section.block{position:relative;padding:64px 18px 84px;scroll-margin-top:90px}
     </div>
   </section>
 
+  <!-- espacio 6 -->
+  <section id="espacio-6" class="block">
+    <div class="inner">
+      <h2 class="title">Documental</h2>
+      <article class="text-block"><h3>The Arborist</h3><p>Trailler del documental</p></article>
+      <div class="carousel" data-caption="tráiler">
+        <div class="deck">
+          <!-- Card 1: abre Vimeo al click -->
+          <figure class="card" data-video="https://vimeo.com/antarcticaaccess/thearborits?share=copy&fl=sv&fe=ci" aria-label="Abrir video en Vimeo">
+            <img src="img/documental.png" alt="Ver en Vimeo">
+          </figure>
+        </div>
+        <div class="nav">
+          <button class="btn prev" aria-label="Anterior"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+          <button class="btn next" aria-label="Siguiente"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+        <div class="caption"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- espacio 5 -->
-  <section id="espacio-5" class="block">
+  <section id="espacio-5" class="block block-centrado">
     <div class="inner">
       <h2 class="title">Equipo Creativo</h2>
       <article class="text-block"><h3></h3>
@@ -539,39 +565,6 @@ section.block{position:relative;padding:64px 18px 84px;scroll-margin-top:90px}
           </div>
         </div>
       </article>
-      <div class="carousel" data-caption="Detrás de cámara">
-        <div class="deck">
-          <figure class="card"><img src="img/trascamara1.png" alt=""></figure>
-          <figure class="card"><img src="img/trascamara2.png" alt=""></figure>
-          <figure class="card"><img src="img/trascamara3.png" alt=""></figure>
-        </div>
-        <div class="nav">
-          <button class="btn prev" aria-label="Anterior"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-          <button class="btn next" aria-label="Siguiente"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
-        </div>
-        <div class="caption"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- espacio 6 -->
-  <section id="espacio-6" class="block">
-    <div class="inner">
-      <h2 class="title">Documental</h2>
-      <article class="text-block"><h3>The Arborist</h3><p>Trailler del documental</p></article>
-      <div class="carousel" data-caption="tráiler">
-        <div class="deck">
-          <!-- Card 1: abre Vimeo al click -->
-          <figure class="card" data-video="https://vimeo.com/antarcticaaccess/thearborits?share=copy&fl=sv&fe=ci" aria-label="Abrir video en Vimeo">
-            <img src="img/documental.png" alt="Ver en Vimeo">
-          </figure>
-        </div>
-        <div class="nav">
-          <button class="btn prev" aria-label="Anterior"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-          <button class="btn next" aria-label="Siguiente"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
-        </div>
-        <div class="caption"></div>
-      </div>
     </div>
   </section>
 </main>
